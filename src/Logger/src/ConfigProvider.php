@@ -7,6 +7,7 @@
 namespace rollun\logger;
 
 use Psr\Log\LoggerInterface;
+use rollun\logger\Filter\TurboSmsFilter;
 use rollun\logger\Formatter\ContextToString;
 use rollun\logger\Formatter\FluentdFormatter;
 use rollun\logger\Formatter\LogStashUdpFormatter;
@@ -28,6 +29,7 @@ use Zend\Log\LoggerServiceFactory;
 use Zend\Log\FilterPluginManagerFactory;
 use Zend\Log\FormatterPluginManagerFactory;
 use Zend\Log\ProcessorPluginManagerFactory;
+use Zend\Log\Writer\Db;
 use Zend\Log\Writer\Stream;
 use Zend\Log\WriterPluginManagerFactory;
 use Zend\Log\Logger;
@@ -270,6 +272,42 @@ class ConfigProvider
                                 ],
                             ],
                             'formatter' => SlackFormatter::class,
+                        ],
+                    ],
+                    [
+                        'name' => Db::class,
+                        'options' => [
+                            'db' => 'db',
+//                            'db' => 'sms_db', // todo: if at db.global.php added 'adapter' use it here ('sms_db')
+                            'table' => 'saasebay',
+                            'column' => [
+                                'message' => 'message',
+                                'context' => [
+                                    'sign' => 'sign',
+                                    'number' => 'number',
+                                ],
+                            ],
+                            'filters' => [
+                                [
+                                    'name' => 'priority',
+                                    'options' => [
+                                        'operator' => getenv('APP_DEBUG') == 'true' ? '<=' : '<',
+                                        'priority' => 7,
+                                    ],
+                                ],
+                                [
+                                    'name' => TurboSmsFilter::class,
+                                    'options' => [
+                                        'ttl' => '24h'
+                                    ]
+                                ],
+                                [
+                                    'name'    => 'regex',
+                                    'options' => [
+                                        'regex' => '/^SMS_ALERT/'
+                                    ],
+                                ],
+                            ],
                         ],
                     ],
                 ],

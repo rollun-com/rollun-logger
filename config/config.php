@@ -22,6 +22,8 @@ $aggregator = new ConfigAggregator([
     \Zend\Log\ConfigProvider::class,
     \rollun\tracer\ConfigProvider::class,
     \rollun\logger\ConfigProvider::class,
+    \Zend\Db\ConfigProvider::class,
+    \Zend\Cache\ConfigProvider::class,
 
     // Include cache configuration
     new ArrayProvider($cacheConfig),
